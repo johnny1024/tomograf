@@ -13,16 +13,21 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        primaryStage.setTitle("Hello World");
+        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml")); //??????
+        primaryStage.setTitle("Tomography Simulation");
 
-        Image imageIn = new Image("14731251_10154858045491412_8583744631705641116_n.jpg");
-        ImageView imageView = new ImageView(imageIn);
+        FXMLLoader loader = new FXMLLoader();  // ???????
+        loader.setLocation(Main.class.getResource("view/sample.fxml")); // ???????
+
+        Controller controller = loader.getController();
+        Image imageIn = new Image("file:/sample/asdf.jpg");
+        controller.imageView.setImage(imageIn);
+
+        //ImageView imageView = new ImageView(imageIn);
         //root.getChildren().addAll(imageView);
 
 
-
-        primaryStage.setScene(new Scene(root, 300, 275));
+        primaryStage.setScene(new Scene(root, 500, 500));
         primaryStage.show();
     }
 
