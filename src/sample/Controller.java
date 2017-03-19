@@ -8,23 +8,14 @@ import javafx.scene.layout.GridPane;
 public class Controller {
 
     @FXML
-    private ImageView imageView;
-
-    @FXML
-    private GridPane gridPane;
+    private ImageView imageViewIn;
 
     public void Initialize()
     {
-        //Image imageIn = new Image("asdf.jpg");
-        //imageView.setImage(imageIn);
 
     }
 
-    public ImageView getImageView() {
-        return imageView;
-    }
-
-    public GridPane getGridPane() {
-        return gridPane;
+    public ImageView getImageViewIn() {
+        return imageViewIn;
     }
 }
