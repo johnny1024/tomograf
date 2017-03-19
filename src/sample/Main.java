@@ -13,22 +13,23 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml")); //??????
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("sample.fxml"));
+        Parent root = fxmlLoader.load();
         primaryStage.setTitle("Tomography Simulation");
 
-        FXMLLoader loader = new FXMLLoader();  // ???????
-        loader.setLocation(Main.class.getResource("view/sample.fxml")); // ???????
+        Controller controller = fxmlLoader.getController();
 
-        Controller controller = loader.getController();
-        Image imageIn = new Image("file:/sample/asdf.jpg");
-        controller.imageView.setImage(imageIn);
-
-        //ImageView imageView = new ImageView(imageIn);
-        //root.getChildren().addAll(imageView);
-
+        Image imageIn = new Image("https://static1.squarespace.com/static/55ccf522e4b0fc9c2b651a5d/55ce42e0e4b065516c646a6d/55ce42fbe4b0ef8aac6a0749/1439580951781/Slayer_Repentless_900.jpg");
+        ImageView imageView = controller.getImageView();
+        imageView.setImage(imageIn);
 
         primaryStage.setScene(new Scene(root, 500, 500));
         primaryStage.show();
+    }
+
+    public void createSinogram()
+    {
+
     }
 
 
