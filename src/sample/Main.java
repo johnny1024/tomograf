@@ -9,10 +9,13 @@ import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.util.Arrays;
+
 
 public class Main extends Application {
 
     // configurable
+    // ADD LOGIC TO PARAMETERS
     private int detectorNumber = 5;
     private double detectorSpread = 5;
     private double iterationAngleDistance = 30;
@@ -56,22 +59,22 @@ public class Main extends Application {
         // new black image
         WritableImage imageSin = new WritableImage(iterationsNumber, detectorNumber);
 
-        int[][] rgbArray = new int[(int)imageIn.getWidth()][(int)imageIn.getHeight()];
+        int[][] rgbArray = new int[iterationsNumber][detectorNumber];
+        Arrays.fill(rgbArray, 0);
 
         for (int i = 0; i < iterationsNumber; i++)
         {
-            //int[][][] rgbArray = new int[(int)imageIn.getWidth()][(int)imageIn.getHeight()][3];
             double detectorStartAngle = transmiterAnglePosition + 180 - (detectorNumber / 2) * singleDetectorSpread;
-            int transmiterX = (int)(Math.sin(Math.toRadians(transmiterAnglePosition)) * radius); // ??
-            int transmiterY = (int)(Math.cos(Math.toRadians(transmiterAnglePosition)) * radius); // ??
+            int transmiterX = (int)(Math.sin(Math.toRadians(transmiterAnglePosition)) * radius + radius);
+            int transmiterY = (int)(Math.cos(Math.toRadians(transmiterAnglePosition)) * radius + radius);
 
             int color, argb;
             for (int j = 0; j < detectorNumber; j++)
             {
                 color = 0;
                 double detectorAngle = detectorStartAngle + j * singleDetectorSpread;
-                int detectorX = (int)(Math.sin(Math.toRadians(detectorAngle)) * radius); // ??
-                int detectorY = (int)(Math.cos(Math.toRadians(detectorAngle)) * radius); // ??
+                int detectorX = (int)(Math.sin(Math.toRadians(detectorAngle)) * radius + radius);
+                int detectorY = (int)(Math.cos(Math.toRadians(detectorAngle)) * radius + radius);
 
                 // MR. B's alg
                 // BEGIN
@@ -79,57 +82,91 @@ public class Main extends Application {
                 int deltaX = detectorX - transmiterX, deltaY = detectorY - transmiterY;
                 if (deltaX == 0)
                 {
-                    for (int k = 0; k < deltaY; k++)
+                    if (deltaY > 0)
                     {
-                        pixelY++;
-                        // GET PIXEL
-                        argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
-                        color += (argb & 0x00FF0000) >> 16;
+                        for (int k = 0; k < deltaY; k++)
+                        {
+                            pixelY++;
+                            // GET PIXEL
+                            argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
+                            color += (argb & 0x00FF0000) >> 16;
+                        }
+                    }
+                    else // deltaY < 0
+                    {
+                        for (int k = 0; k < deltaY; k++)
+                        {
+                            pixelY--;
+                            // GET PIXEL
+                            argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
+                            color += (argb & 0x00FF0000) >> 16;
+                        }
                     }
                 }
-                else if (deltaX > deltaY)
+                else if (Math.abs(deltaX) > Math.abs(deltaY))
                 {
-                    for (int k = 0; k < deltaX; k++)
+                    if (deltaX > 0)
                     {
-                        pixelX++;
-                        pixelY = (deltaY / deltaX) * (pixelX - transmiterX) + transmiterY;
-                        // GET PIXEL
-                        argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
-                        color += (argb & 0x00FF0000) >> 16;
+                        for (int k = 0; k < Math.abs(deltaX); k++)
+                        {
+                            pixelX++;
+                            pixelY = (deltaY / deltaX) * (pixelX - transmiterX) + transmiterY;
+                            argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
+                            color += (argb & 0x00FF0000) >> 16;
+                        }
+                    }
+                    else // deltaX <0
+                    {
+                        for (int k = 0; k < Math.abs(deltaX); k++)
+                        {
+                            pixelX--;
+                            pixelY = (deltaY / deltaX) * (pixelX - transmiterX) + transmiterY;
+                            argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
+                            color += (argb & 0x00FF0000) >> 16;
+                        }
                     }
                 }
                 else // deltaX < deltaY
                 {
-                    for (int k = 0; k < deltaY; k++)
+                    if (deltaY > 0)
                     {
-                        pixelY++;
-                        pixelX = (deltaX / deltaY) * (pixelY - transmiterY) + transmiterX;
-                        // GET PIXEL
-                        argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
-                        color += (argb & 0x00FF0000) >> 16;
+                        for (int k = 0; k < deltaY; k++)
+                        {
+                            pixelY++;
+                            pixelX = (deltaX / deltaY) * (pixelY - transmiterY) + transmiterX;
+                            argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
+                            color += (argb & 0x00FF0000) >> 16;
+                        }
+                    }
+                    else // deltaY < 0
+                    {
+                        for (int k = 0; k < deltaY; k++)
+                        {
+                            pixelY--;
+                            pixelX = (deltaX / deltaY) * (pixelY - transmiterY) + transmiterX;
+                            argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
+                            color += (argb & 0x00FF0000) >> 16;
+                        }
                     }
                 }
                 // END
-
-                //argb = (0xFF >> 24) | (r << 16) | (g << 8) | b; // to nie będzie działać // tablica 3D????
                 rgbArray[i][j] = color;
-                //imageSin.getPixelWriter().setArgb(j, i, argb);
             }
             transmiterAnglePosition += iterationAngleDistance;
         }
 
         // normalization
         int maxColor = 0;
-        for (int i = 0; i < (int)imageIn.getWidth(); i++)
+        for (int i = 0; i < iterationsNumber; i++)
         {
-            for (int j = 0; j < (int)imageIn.getHeight(); j++)
+            for (int j = 0; j < detectorNumber; j++)
             {
                 if (maxColor < rgbArray[i][j]) maxColor = rgbArray[i][j];
             }
         }
-        for (int i = 0; i < (int)imageIn.getWidth(); i++)
+        for (int i = 0; i < iterationsNumber; i++)
         {
-            for (int j = 0; j < (int)imageIn.getHeight(); j++)
+            for (int j = 0; j < detectorNumber; j++)
             {
                 rgbArray[i][j] /= maxColor;
                 int argb = (0xFF << 24) | (rgbArray[i][j] << 16) | (rgbArray[i][j] << 8) | rgbArray[i][j]; // will this even work??
@@ -182,7 +219,6 @@ public class Main extends Application {
                         pixelY++;
                         // GET PIXEL
                         rgbArray[pixelX][pixelY] += color;
-
                     }
                 }
                 else if (deltaX > deltaY)
