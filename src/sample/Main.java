@@ -22,6 +22,8 @@ public class Main extends Application {
 
     // programmed
     private int radius;
+    private int width;
+    private int height;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -36,7 +38,8 @@ public class Main extends Application {
         imageViewIn.setImage(imageIn);
 
         radius = (int)(imageIn.getHeight() / 2);
-
+        width = (int)imageIn.getWidth();
+        height = (int)imageIn.getHeight();
         //Image imageSin = createSinogram();
         //ImageView imageViewSin = controller.getImageViewSin();
         //imageViewSin.setImage(imageSin);
@@ -169,7 +172,7 @@ public class Main extends Application {
             for (int j = 0; j < detectorNumber; j++)
             {
                 rgbArray[i][j] /= maxColor;
-                int argb = (0xFF << 24) | (rgbArray[i][j] << 16) | (rgbArray[i][j] << 8) | rgbArray[i][j]; // will this even work??
+                int argb = (0xFF << 24) | (rgbArray[i][j] << 16) | (rgbArray[i][j] << 8) | rgbArray[i][j]; // will this even work?? well it should
                 imageSin.getPixelWriter().setArgb(i, j, argb);
             }
         }
@@ -187,26 +190,24 @@ public class Main extends Application {
         int iterationsNumber = (int)Math.ceil(360 / iterationAngleDistance); // ceil/floor?
 
         // new black image
-        WritableImage imageOut = new WritableImage(iterationsNumber, detectorNumber);
+        WritableImage imageOut = new WritableImage(width, height);
 
-        int[][] rgbArray = new int[(int)imageSin.getWidth()][(int)imageSin.getHeight()];
-        // zerowanie array
+        int[][] rgbArray = new int[width][height];
+        Arrays.fill(rgbArray, 0);
 
         for (int i = 0; i < iterationsNumber; i++)
         {
-            //int[][][] rgbArray = new int[(int)imageIn.getWidth()][(int)imageIn.getHeight()][3];
             double detectorStartAngle = transmiterAnglePosition + 180 - (detectorNumber / 2) * singleDetectorSpread;
-            int transmiterX = (int)(Math.sin(Math.toRadians(transmiterAnglePosition)) * radius); // ??
-            int transmiterY = (int)(Math.cos(Math.toRadians(transmiterAnglePosition)) * radius); // ??
+            int transmiterX = (int)(Math.sin(Math.toRadians(transmiterAnglePosition)) * radius + radius);
+            int transmiterY = (int)(Math.cos(Math.toRadians(transmiterAnglePosition)) * radius + radius);
 
             int color, argb;
             for (int j = 0; j < detectorNumber; j++)
             {
-                argb = imageSin.getPixelReader().getArgb(i, j); // ??
-                color = (argb & 0x00FF0000) >> 16;; // ??
+                color = imageSin.getPixelReader().getArgb(i, j) & 0x000000FF;
                 double detectorAngle = detectorStartAngle + j * singleDetectorSpread;
-                int detectorX = (int)(Math.sin(Math.toRadians(detectorAngle)) * radius); // ??
-                int detectorY = (int)(Math.cos(Math.toRadians(detectorAngle)) * radius); // ??
+                int detectorX = (int)(Math.sin(Math.toRadians(detectorAngle)) * radius + radius);
+                int detectorY = (int)(Math.cos(Math.toRadians(detectorAngle)) * radius + radius);
 
                 // MR. B's alg
                 // BEGIN
@@ -214,62 +215,92 @@ public class Main extends Application {
                 int deltaX = detectorX - transmiterX, deltaY = detectorY - transmiterY;
                 if (deltaX == 0)
                 {
-                    for (int k = 0; k < deltaY; k++)
+                    if (deltaY > 0)
                     {
-                        pixelY++;
-                        // GET PIXEL
-                        rgbArray[pixelX][pixelY] += color;
+                        for (int k = 0; k < deltaY; k++)
+                        {
+                            pixelY++;
+                            rgbArray[pixelX][pixelY] += color;
+                        }
+                    }
+                    else // deltaY < 0
+                    {
+                        for (int k = 0; k < deltaY; k++)
+                        {
+                            pixelY--;
+                            rgbArray[pixelX][pixelY] += color;
+                        }
                     }
                 }
-                else if (deltaX > deltaY)
+                else if (Math.abs(deltaX) > Math.abs(deltaY))
                 {
-                    for (int k = 0; k < deltaX; k++)
+                    if (deltaX > 0)
                     {
-                        pixelX++;
-                        pixelY = (deltaY / deltaX) * (pixelX - transmiterX) + transmiterY;
-                        // GET PIXEL
-                        rgbArray[pixelX][pixelY] += color;
+                        for (int k = 0; k < Math.abs(deltaX); k++)
+                        {
+                            pixelX++;
+                            pixelY = (deltaY / deltaX) * (pixelX - transmiterX) + transmiterY;
+                            rgbArray[pixelX][pixelY] += color;
+                        }
+                    }
+                    else // deltaX <0
+                    {
+                        for (int k = 0; k < Math.abs(deltaX); k++)
+                        {
+                            pixelX--;
+                            pixelY = (deltaY / deltaX) * (pixelX - transmiterX) + transmiterY;
+                            rgbArray[pixelX][pixelY] += color;
+                        }
                     }
                 }
                 else // deltaX < deltaY
                 {
-                    for (int k = 0; k < deltaY; k++)
+                    if (deltaY > 0)
                     {
-                        pixelY++;
-                        pixelX = (deltaX / deltaY) * (pixelY - transmiterY) + transmiterX;
-                        // GET PIXEL
-                        rgbArray[pixelX][pixelY] += color;
+                        for (int k = 0; k < deltaY; k++)
+                        {
+                            pixelY++;
+                            pixelX = (deltaX / deltaY) * (pixelY - transmiterY) + transmiterX;
+                            rgbArray[pixelX][pixelY] += color;
+                        }
+                    }
+                    else // deltaY < 0
+                    {
+                        for (int k = 0; k < deltaY; k++)
+                        {
+                            pixelY--;
+                            pixelX = (deltaX / deltaY) * (pixelY - transmiterY) + transmiterX;
+                            rgbArray[pixelX][pixelY] += color;
+                        }
                     }
                 }
                 // END
-
-                //argb = (0xFF >> 24) | (r << 16) | (g << 8) | b; // to nie będzie działać // tablica 3D????
-                //imageSin.getPixelWriter().setArgb(j, i, argb);
             }
             transmiterAnglePosition += iterationAngleDistance;
         }
 
         // normalization
         int maxColor = 0;
-        for (int i = 0; i < (int)imageSin.getWidth(); i++)
+        for (int i = 0; i < width; i++)
         {
-            for (int j = 0; j < (int)imageSin.getHeight(); j++)
+            for (int j = 0; j < height; j++)
             {
                 if (maxColor < rgbArray[i][j]) maxColor = rgbArray[i][j];
             }
         }
-        for (int i = 0; i < (int)imageSin.getWidth(); i++)
+        for (int i = 0; i < width; i++)
         {
-            for (int j = 0; j < (int)imageSin.getHeight(); j++)
+            for (int j = 0; j < height; j++)
             {
                 rgbArray[i][j] /= maxColor;
-                int argb = (0xFF << 24) | (rgbArray[i][j] << 16) | (rgbArray[i][j] << 8) | rgbArray[i][j]; // will this even work??
+                int argb = (255 << 24) | (rgbArray[i][j] << 16) | (rgbArray[i][j] << 8) | rgbArray[i][j];
                 imageOut.getPixelWriter().setArgb(i, j, argb);
             }
         }
 
-        //return imageSin;
+        //return imageOut;
 
+        // temp shit
         return new Image("https://static1.squarespace.com/static/55ccf522e4b0fc9c2b651a5d/55ce42e0e4b065516c646a6d/55ce42fbe4b0ef8aac6a0749/1439580951781/Slayer_Repentless_900.jpg");
     }
 
