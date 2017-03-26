@@ -26,6 +26,10 @@ public class Main extends Application {
     private int width;
     private int height;
 
+    private ImageView imageViewIn;
+    private ImageView imageViewSin;
+    private ImageView imageViewOut;
+
     @Override
     public void start(Stage primaryStage) throws Exception{
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("sample.fxml"));
@@ -35,7 +39,7 @@ public class Main extends Application {
         Controller controller = fxmlLoader.getController();
 
         Image imageIn = new Image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/SheppLogan_Phantom.svg/220px-SheppLogan_Phantom.svg.png");
-        ImageView imageViewIn = controller.getImageViewIn();
+        imageViewIn = controller.getImageViewIn();
         imageViewIn.setImage(imageIn);
 
         radius = (int)(imageIn.getHeight() / 2) - 1;
@@ -43,14 +47,14 @@ public class Main extends Application {
         height = (int)imageIn.getHeight();
 
         Image imageSin = createSinogram(imageIn);
-        ImageView imageViewSin = controller.getImageViewSin();
+        imageViewSin = controller.getImageViewSin();
         imageViewSin.setImage(imageSin);
 
         Image imageOut = createOutput(imageSin);
-        ImageView imageViewOut = controller.getImageViewOut();
+        imageViewOut = controller.getImageViewOut();
         imageViewOut.setImage(imageOut);
 
-        primaryStage.setScene(new Scene(root, 1000, 500));
+        primaryStage.setScene(new Scene(root, 1050, 500));
         primaryStage.show();
     }
 
