@@ -17,9 +17,9 @@ public class Main extends Application {
 
     // configurable
     // ADD LOGIC TO PARAMETERS
-    private int detectorNumber = 100;
-    private double detectorSpread = 5;
-    private double iterationAngleDistance = 6;
+    private int detectorNumber = 1800;
+    private double detectorSpread = 0.1;
+    private double iterationAngleDistance = 0.5;
 
     // programmed
     private int radius;
@@ -34,7 +34,6 @@ public class Main extends Application {
 
         Controller controller = fxmlLoader.getController();
 
-        //Image imageIn = new Image("https://static1.squarespace.com/static/55ccf522e4b0fc9c2b651a5d/55ce42e0e4b065516c646a6d/55ce42fbe4b0ef8aac6a0749/1439580951781/Slayer_Repentless_900.jpg");
         Image imageIn = new Image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/SheppLogan_Phantom.svg/220px-SheppLogan_Phantom.svg.png");
         ImageView imageViewIn = controller.getImageViewIn();
         imageViewIn.setImage(imageIn);
@@ -47,12 +46,11 @@ public class Main extends Application {
         ImageView imageViewSin = controller.getImageViewSin();
         imageViewSin.setImage(imageSin);
 
-//        Image imageSin = createSinogram(imageIn);
-//        imageViewIn.setImage(imageSin);
-//        Image imageOut = createOutput(imageSin);
-//        imageViewIn.setImage(imageOut);
+        Image imageOut = createOutput(imageSin);
+        ImageView imageViewOut = controller.getImageViewOut();
+        imageViewOut.setImage(imageOut);
 
-        primaryStage.setScene(new Scene(root, 500, 500));
+        primaryStage.setScene(new Scene(root, 1000, 500));
         primaryStage.show();
     }
 
@@ -87,8 +85,8 @@ public class Main extends Application {
                 else stepX = -1;
                 if(transmiterY <= detectorY) stepY = 1;
                 else stepY = -1;
-                deltaX = (int)Math.abs(detectorX - transmiterX);
-                deltaY = (int)Math.abs(detectorY - transmiterY);
+                deltaX = Math.abs(detectorX - transmiterX);
+                deltaY = Math.abs(detectorY - transmiterY);
                 pixelX = transmiterX;
                 pixelY = transmiterY;
 
@@ -193,8 +191,8 @@ public class Main extends Application {
                 else stepX = -1;
                 if(transmiterY <= detectorY) stepY = 1;
                 else stepY = -1;
-                deltaX = (int)Math.abs(detectorX - transmiterX);
-                deltaY = (int)Math.abs(detectorY - transmiterY);
+                deltaX = Math.abs(detectorX - transmiterX);
+                deltaY = Math.abs(detectorY - transmiterY);
                 pixelX = transmiterX;
                 pixelY = transmiterY;
 

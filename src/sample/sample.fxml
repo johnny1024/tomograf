@@ -7,5 +7,6 @@
    <children>
       <ImageView fx:id="imageViewIn" fitHeight="328.0" fitWidth="346.0" layoutX="38.0" layoutY="38.0" pickOnBounds="true" preserveRatio="true" />
       <ImageView fx:id="imageViewSin" fitHeight="317.0" fitWidth="346.0" layoutX="457.0" layoutY="38.0" pickOnBounds="true" preserveRatio="true" />
+      <ImageView fx:id="imageViewOut" fitHeight="150.0" fitWidth="200.0" layoutX="855.0" layoutY="59.0" pickOnBounds="true" preserveRatio="true" />
    </children>
 </AnchorPane>
