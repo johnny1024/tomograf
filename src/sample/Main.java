@@ -17,7 +17,7 @@ public class Main extends Application {
 
     // configurable
     // ADD LOGIC TO PARAMETERS
-    private int detectorNumber = 1800;
+    private int detectorNumber = 600;
     private double detectorSpread = 0.1;
     private double iterationAngleDistance = 0.5;
 
@@ -38,7 +38,7 @@ public class Main extends Application {
         ImageView imageViewIn = controller.getImageViewIn();
         imageViewIn.setImage(imageIn);
 
-        radius = (int)(imageIn.getHeight() / 2) - 3;
+        radius = (int)(imageIn.getHeight() / 2) - 1;
         width = (int)imageIn.getWidth();
         height = (int)imageIn.getHeight();
 
@@ -72,7 +72,7 @@ public class Main extends Application {
             int transmiterX = (int)((Math.sin(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
             int transmiterY = (int)((-Math.cos(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
 
-            int color, argb;
+            double color;
             for (int j = 0; j < detectorNumber; j++)
             {
                 color = 0;
@@ -90,8 +90,10 @@ public class Main extends Application {
                 pixelX = transmiterX;
                 pixelY = transmiterY;
 
-                argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
-                color += (argb & 0x00FF0000) >> 16;
+                //argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
+                //color += (argb & 0x00FF0000) >> 16;
+
+                color += imageIn.getPixelReader().getColor(pixelX, pixelY).getRed();
 
                 //imageSin.getPixelWriter().setColor(pixelX, pixelY, Color.rgb(255, 0, 255));
 
@@ -108,8 +110,10 @@ public class Main extends Application {
                             e += deltaX;
                         }
 
-                        argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
-                        color += (argb & 0x00FF0000) >> 16;
+                        color += imageIn.getPixelReader().getColor(pixelX, pixelY).getBrightness();
+
+                        //argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
+                        //color += (argb & 0x00FF0000) >> 16;
 
                         //imageSin.getPixelWriter().setColor(pixelX, pixelY, Color.rgb(255, 0, 255));
                     }
@@ -127,8 +131,10 @@ public class Main extends Application {
                             e += deltaY;
                         }
 
-                        argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
-                        color += (argb & 0x00FF0000) >> 16;
+                        color += imageIn.getPixelReader().getColor(pixelX, pixelY).getBrightness();
+
+                        //argb = imageIn.getPixelReader().getArgb(pixelX, pixelY);
+                        //color += (argb & 0x00FF0000) >> 16;
 
                         //imageSin.getPixelWriter().setColor(pixelX, pixelY, Color.rgb(255, 0, 255));
                     }
@@ -175,16 +181,16 @@ public class Main extends Application {
         for (int i = 0; i < iterationsNumber; i++)
         {
             double detectorStartAngle = transmiterAnglePosition + 180 - (detectorNumber / 2) * singleDetectorSpread;
-            int transmiterX = (int)(Math.sin(Math.toRadians(transmiterAnglePosition)) * radius + radius);
-            int transmiterY = (int)(Math.cos(Math.toRadians(transmiterAnglePosition)) * radius + radius);
+            int transmiterX = (int)((Math.sin(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
+            int transmiterY = (int)((Math.cos(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
 
-            int color;
+            double color;
             for (int j = 0; j < detectorNumber; j++)
             {
-                color = imageSin.getPixelReader().getArgb(i, j) & 0x000000FF;
+                color = imageSin.getPixelReader().getColor(i, j).getRed();
                 double detectorAngle = detectorStartAngle + j * singleDetectorSpread;
-                int detectorX = (int)(Math.sin(Math.toRadians(detectorAngle)) * radius + radius);
-                int detectorY = (int)(Math.cos(Math.toRadians(detectorAngle)) * radius + radius);
+                int detectorX = (int)((Math.sin(Math.toRadians(detectorAngle)) + 1) * radius);
+                int detectorY = (int)((Math.cos(Math.toRadians(detectorAngle)) + 1) * radius);
 
                 int stepX, stepY, pixelX, pixelY, deltaX, deltaY, e;
                 if(transmiterX <= detectorX) stepX = 1;
@@ -197,8 +203,6 @@ public class Main extends Application {
                 pixelY = transmiterY;
 
                 rgbArray[pixelX][pixelY] += color;
-
-                //imageSin.getPixelWriter().setColor(pixelX, pixelY, Color.rgb(255, 0, 255));
 
                 if(deltaX >= deltaY)
                 {
