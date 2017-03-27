@@ -9,6 +9,11 @@ public class Controller {
 
     @FXML
     private ImageView imageViewIn;
+    @FXML
+    private ImageView imageViewSin;
+    @FXML
+    private ImageView imageViewOut;
+
 
     public void Initialize()
     {
@@ -18,4 +23,11 @@ public class Controller {
     public ImageView getImageViewIn() {
         return imageViewIn;
     }
+    public ImageView getImageViewSin() {
+        return imageViewSin;
+    }
+    public ImageView getImageViewOut() {
+        return imageViewOut;
+    }
+
 }
