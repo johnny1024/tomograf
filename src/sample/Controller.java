@@ -1,9 +1,10 @@
 package sample;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.image.Image;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
+
 
 public class Controller {
 
@@ -13,20 +14,32 @@ public class Controller {
     private ImageView imageViewSin;
     @FXML
     private ImageView imageViewOut;
-
+    @FXML
+    private Slider detNum;
+    @FXML
+    private Slider detSpread;
+    @FXML
+    private Slider angDist;
 
     public void Initialize()
     {
 
     }
+    public void handleButtonAction(ActionEvent event) {
+        Tomografos tomo = new Tomografos();
+        tomo.detectorNumber = (int) detNum.getValue();
+        tomo.detectorSpread = (int) detSpread.getValue();
+        tomo.iterationAngleDistance = (int) angDist.getValue();
+        tomo.DrawTomo(this);
+    }
 
-    public ImageView getImageViewIn() {
+    ImageView getImageViewIn() {
         return imageViewIn;
     }
-    public ImageView getImageViewSin() {
+    ImageView getImageViewSin() {
         return imageViewSin;
     }
-    public ImageView getImageViewOut() {
+    ImageView getImageViewOut() {
         return imageViewOut;
     }
 

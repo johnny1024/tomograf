@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class Sinogram {
+class Sinogram {
     // from constructor
     private int detectorNumber;
     private double detectorSpread;
@@ -26,7 +26,7 @@ public class Sinogram {
     private double singleDetectorSpread;
     private int iterationsNumber;
 
-    public Sinogram (int detectorNumber, double detectorSpread, double iterationAngleDistance, Image imageInput) {
+    Sinogram(int detectorNumber, double detectorSpread, double iterationAngleDistance, Image imageInput) {
         this.detectorNumber = detectorNumber;
         this.detectorSpread = detectorSpread;
         this.iterationAngleDistance = iterationAngleDistance;
@@ -182,7 +182,7 @@ public class Sinogram {
         }
     }
 
-    public Image makeSinogram()
+    Image makeSinogram()
     {
         imageSinogram = new WritableImage(iterationsNumber, detectorNumber);
 
@@ -194,7 +194,7 @@ public class Sinogram {
         return imageSinogram;
     }
 
-    public Image getSinogram() {
+    Image getSinogram() {
         return imageSinogram;
     }
 }

@@ -23,7 +23,7 @@ public class Reconstructed
     private double singleDetectorSpread;
     private int iterationsNumber;
 
-    public Reconstructed(int detectorNumber, double detectorSpread, double iterationAngleDistance, Image imageSinogram, int height, int width) {
+    Reconstructed(int detectorNumber, double detectorSpread, double iterationAngleDistance, Image imageSinogram, int height, int width) {
         this.detectorNumber = detectorNumber;
         this.detectorSpread = detectorSpread;
         this.iterationAngleDistance = iterationAngleDistance;
@@ -125,7 +125,7 @@ public class Reconstructed
         }
     }
 
-    public Image makeReconstruced()
+    Image makeReconstruced()
     {
         imageReconstructed = new WritableImage(width, height);
 
