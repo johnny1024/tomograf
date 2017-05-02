@@ -45,7 +45,7 @@ public class Tomografos extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("sample.fxml"));
         Parent root = fxmlLoader.load();
         primaryStage.setTitle("Tomography Simulation");
-        //stagus = primaryStage;
+
         final Controller controller = fxmlLoader.getController();
         primaryStage.setResizable(false);
         primaryStage.setScene(new Scene(root, 1100, 550));
