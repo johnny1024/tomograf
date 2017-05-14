@@ -8,6 +8,8 @@ import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.io.File;
+
 public class Main extends Application {
 
     // configurable
@@ -27,11 +29,12 @@ public class Main extends Application {
         primaryStage.setTitle("Tomography Simulation");
 
         final Controller controller = fxmlLoader.getController();
+        controller.init();
 
         // v1
         Image imageIn = new Image("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/SheppLogan_Phantom.svg/220px-SheppLogan_Phantom.svg.png");
         // v2
-        //File xxx = new File("D:\\Documents\\!MINE\\Java\\xxx.png");
+        //File xxx = new File("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/SheppLogan_Phantom.svg/220px-SheppLogan_Phantom.svg.png");
         //final Image imageIn = new Image(xxx.toURI().toString());
 
         imageViewIn = controller.getImageViewIn();
