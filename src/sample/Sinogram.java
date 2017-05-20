@@ -140,7 +140,7 @@ public class Sinogram {
                 pixelX = transmiterX;
                 pixelY = transmiterY;
 
-                color += imageInput.getPixelReader().getColor(pixelX, pixelY).getRed();
+                color += imageInput.getPixelReader().getColor(pixelX, pixelY).getBrightness();
 
                 if(deltaX >= deltaY)
                 {

@@ -2,15 +2,22 @@ package sample;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Slider;
-import javafx.scene.image.ImageView;
+import javafx.scene.image.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
-import java.awt.*;
 
 public class Controller {
+
+    private int detectorNumber = 300;
+    private double detectorSpread = 300;
+    private double iterationAngleDistance = 1;
+
+    private Image imageIn;
 
     @FXML
     private TextField imageTextField;
@@ -34,7 +41,6 @@ public class Controller {
     @FXML
     private Button runButton;
 
-
     @FXML
     private ImageView imageViewIn;
     @FXML
@@ -48,13 +54,41 @@ public class Controller {
     @FXML
     private ImageView imageViewOut2;
 
+    private void loadImage() {
+        runButton.setDisable(true);
+        //imageErrorLabel.setText("Loading...");
+        try {
+            imageIn = new Image(imageTextField.getText());
+            imageViewIn.setImage(imageIn);
+            //imageErrorLabel.setText("");
+            runButton.setDisable(false);
+        } catch (Exception e) {
+            //.setText("Invalid image!");
+            runButton.setDisable(true);
+        }
+    }
+
+    private void runAllOperations() {
+        Sinogram sinogram = new Sinogram(detectorNumber, detectorSpread, iterationAngleDistance, imageIn);
+        Image imageSin = sinogram.makeSinogram();
+        imageViewSin.setImage(imageSin);
+
+        Reconstructed output = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, sinogram.getSinogram(), (int)imageIn.getHeight(), (int)imageIn.getWidth());
+        Image imageOut = output.makeReconstruced();
+        imageViewOut.setImage(imageOut);
+    }
+
     public void init()
     {
+        imageErrorLabel.setText("");
+        runButton.setDisable(true);
+
         numberOfDetectorsSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 numberOfDetectorsSlider.setValue(newValue.intValue());
                 numberOfDetectorsLabel.setText(String.format("%d", newValue.intValue()));
+                detectorNumber = newValue.intValue();
             }
         });
 
@@ -63,57 +97,41 @@ public class Controller {
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 detectorsSpreadSlider.setValue(newValue.intValue());
                 detectorsSpreadLabel.setText(String.format("%d", newValue.intValue()));
+                detectorSpread = newValue.intValue();
             }
         });
 
-    }
+        iterationAngleSlider.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                iterationAngleSlider.setValue(newValue.intValue());
+                double labelValue = newValue.intValue() / 100;
+                iterationAngleLabel.setText(String.format("%.2f", labelValue));
+                iterationAngleDistance = labelValue;
+            }
+        });
 
-    public TextField getImageTextField() {
-        return imageTextField;
-    }
-    public Label getImageErrorLabel() {
-        return imageErrorLabel;
-    }
-    public Button getLoadButton() {
-        return loadButton;
-    }
-    public Slider getNumberOfDetectorsSlider() {
-        return numberOfDetectorsSlider;
-    }
-    public Label getNumberOfDetectorsLabel() {
-        return numberOfDetectorsLabel;
-    }
-    public Slider getDetectorsSpreadSlider() {
-        return detectorsSpreadSlider;
-    }
-    public Label getDetectorsSpreadLabel() {
-        return detectorsSpreadLabel;
-    }
-    public Slider getIterationAngleSlider() {
-        return iterationAngleSlider;
-    }
-    public Label getIterationAngleLabel() {
-        return iterationAngleLabel;
-    }
-    public Button getRunButton() {
-        return runButton;
-    }
-    public ImageView getImageViewIn() {
-        return imageViewIn;
-    }
-    public ImageView getImageViewRadar() {
-        return imageViewRadar;
-    }
-    public ImageView getImageViewSin() {
-        return imageViewSin;
-    }
-    public ImageView getImageViewOut() {
-        return imageViewOut;
-    }
-    public ImageView getImageViewSin2() {
-        return imageViewSin2;
-    }
-    public ImageView getImageViewOut2() {
-        return imageViewOut2;
+        loadButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                Thread t = new Thread(new Runnable() {
+                public void run() {
+                    loadImage();
+                }
+            });
+            t.start();
+            }
+        });
+
+        runButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        runAllOperations();
+                    }
+                });
+            }
+        });
     }
 }
