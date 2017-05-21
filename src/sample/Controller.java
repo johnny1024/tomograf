@@ -18,6 +18,7 @@ public class Controller {
     private double iterationAngleDistance = 1;
 
     private Image imageIn;
+    private Image placeholder;
 
     @FXML
     private TextField imageTextField;
@@ -69,23 +70,30 @@ public class Controller {
     }
 
     private void runAllOperations() {
-        Sinogram sinogram = new Sinogram(detectorNumber, detectorSpread, iterationAngleDistance, imageIn);
-        Image imageSin = sinogram.makeSinogram();
-        imageViewSin.setImage(imageSin);
+        Sinogram sinogram = new Sinogram(detectorNumber, detectorSpread, iterationAngleDistance, imageIn, imageViewSin, imageViewSin2, imageViewRadar);
 
-        Reconstructed output = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, sinogram.getSinogram(), (int)imageIn.getHeight(), (int)imageIn.getWidth());
-        Image imageOut = output.makeReconstruced();
-        imageViewOut.setImage(imageOut);
+        Reconstructed output = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, sinogram
+                .getSinogram(), (int)imageIn.getHeight(), (int)imageIn.getWidth(), imageViewOut);
+        Reconstructed output2 = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, sinogram
+                .getFilteredSinogram(), (int)imageIn.getHeight(), (int)imageIn.getWidth(), imageViewOut2);
     }
 
     public void init()
     {
+//        placeholder = new Image("file:placeholder.png");
+//        imageViewIn.setImage(placeholder);
+//        imageViewSin.setImage(placeholder);
+//        imageViewSin2.setImage(placeholder);
+//        imageViewOut.setImage(placeholder);
+//        imageViewOut2.setImage(placeholder);
+
         imageErrorLabel.setText("");
         runButton.setDisable(true);
 
         numberOfDetectorsSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                if ((double)newValue == 0) newValue = 1;
                 numberOfDetectorsSlider.setValue(newValue.intValue());
                 numberOfDetectorsLabel.setText(String.format("%d", newValue.intValue()));
                 detectorNumber = newValue.intValue();
@@ -95,6 +103,7 @@ public class Controller {
         detectorsSpreadSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                if ((double)newValue == 0) newValue = 1;
                 detectorsSpreadSlider.setValue(newValue.intValue());
                 detectorsSpreadLabel.setText(String.format("%d", newValue.intValue()));
                 detectorSpread = newValue.intValue();
@@ -104,8 +113,9 @@ public class Controller {
         iterationAngleSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                if ((double)newValue == 0) newValue = 1;
                 iterationAngleSlider.setValue(newValue.intValue());
-                double labelValue = newValue.intValue() / 100;
+                double labelValue = newValue.doubleValue() / 100;
                 iterationAngleLabel.setText(String.format("%.2f", labelValue));
                 iterationAngleDistance = labelValue;
             }
@@ -114,23 +124,27 @@ public class Controller {
         loadButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override public void handle(ActionEvent e) {
                 Thread t = new Thread(new Runnable() {
-                public void run() {
-                    loadImage();
-                }
-            });
-            t.start();
+                    @Override
+                    public void run() {
+                        loadImage();
+                    }
+                });
+                t.start();
             }
         });
 
         runButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
+                loadButton.setDisable(true);
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         runAllOperations();
+                        loadButton.setDisable(false);
                     }
                 });
+                t.start();
             }
         });
     }

@@ -20,7 +20,7 @@ public class Main extends Application {
         final Controller controller = fxmlLoader.getController();
         controller.init();
 
-        primaryStage.setScene(new Scene(root, 1150, 500));
+        primaryStage.setScene(new Scene(root, 1100, 850));
         primaryStage.show();
     }
 

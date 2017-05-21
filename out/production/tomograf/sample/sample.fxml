@@ -8,7 +8,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="850.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+<AnchorPane maxHeight="850.0" maxWidth="1100.0" minHeight="850.0" minWidth="1100.0" prefHeight="850.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <children>
       <!--image loading-->
       <Label layoutX="21.0" layoutY="61.0" text="Image:" />
@@ -45,9 +45,10 @@
          <image>
             <Image url="@../../../../../../Pictures/masterofpuppets.jpg" />
          </image></ImageView>
+      <!--sliders-->
       <Slider fx:id="numberOfDetectorsSlider" blockIncrement="1.0" layoutX="579.0" layoutY="13.0" majorTickUnit="125.0" max="1000.0" prefHeight="33.0" prefWidth="364.0" showTickLabels="true" value="500.0" />
       <Slider fx:id="detectorsSpreadSlider" blockIncrement="1.0" layoutX="579.0" layoutY="49.0" majorTickUnit="60.0" max="360.0" prefHeight="33.0" prefWidth="364.0" showTickLabels="true" value="180.0" />
-      <Slider fx:id="iterationAngleSlider" blockIncrement="1.0" layoutX="579.0" layoutY="84.0" majorTickUnit="50.0" max="500.0" prefHeight="33.0" prefWidth="364.0" showTickLabels="true" value="15.0" />
+      <Slider fx:id="iterationAngleSlider" blockIncrement="1.0" layoutX="579.0" layoutY="84.0" majorTickUnit="50.0" max="500.0" prefHeight="33.0" prefWidth="364.0" showTickLabels="true" value="250.0" />
       <Label fx:id="numberOfDetectorsLabel" layoutX="956.0" layoutY="13.0" text="500" />
       <Label fx:id="detectorsSpreadLabel" layoutX="956.0" layoutY="49.0" text="180" />
       <Label fx:id="iterationAngleLabel" layoutX="956.0" layoutY="84.0" text="250" />
@@ -57,5 +58,6 @@
       <Label layoutX="50.0" layoutY="483.0" text="Tomograph:" />
       <Label layoutX="400.0" layoutY="483.0" text="Filtered sinogram:" />
       <Label layoutX="750.0" layoutY="483.0" text="Filtered output image:" />
+      <Label layoutY="836.0" />
    </children>
 </AnchorPane>

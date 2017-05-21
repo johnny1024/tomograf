@@ -1,6 +1,7 @@
 package sample;
 
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
@@ -12,6 +13,7 @@ public class Reconstructed
     private double detectorSpread;
     private double iterationAngleDistance;
     private Image imageSinogram;
+    private ImageView imageViewOut;
 
     private WritableImage imageReconstructed;
 
@@ -23,11 +25,13 @@ public class Reconstructed
     private double singleDetectorSpread;
     private int iterationsNumber;
 
-    public Reconstructed(int detectorNumber, double detectorSpread, double iterationAngleDistance, Image imageSinogram, int height, int width) {
+    public Reconstructed(int detectorNumber, double detectorSpread, double iterationAngleDistance, Image
+            imageSinogram, int height, int width, ImageView imageViewOut) {
         this.detectorNumber = detectorNumber;
         this.detectorSpread = detectorSpread;
         this.iterationAngleDistance = iterationAngleDistance;
         this.imageSinogram = imageSinogram;
+        this.imageViewOut = imageViewOut;
 
         iterationsNumber = (int)Math.ceil(360 / iterationAngleDistance);
         this.height = height;
@@ -36,6 +40,8 @@ public class Reconstructed
         outputArrayRGB = new double[width][height];
         for (double[] row : outputArrayRGB) Arrays.fill(row, 0);
         singleDetectorSpread = detectorSpread / (detectorNumber - 1);
+
+        makeReconstruced();
     }
 
     private void createReconstructed()
@@ -125,14 +131,14 @@ public class Reconstructed
         }
     }
 
-    public Image makeReconstruced()
+    public void makeReconstruced()
     {
         imageReconstructed = new WritableImage(width, height);
 
         createReconstructed();
         normalize();
 
-        return imageReconstructed;
+        imageViewOut.setImage(imageReconstructed);
     }
 
     public Image getReconstructed () {

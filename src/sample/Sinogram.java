@@ -2,6 +2,7 @@ package sample;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
@@ -17,26 +18,37 @@ public class Sinogram {
     private double detectorSpread;
     private double iterationAngleDistance;
     private Image imageInput;
+    private ImageView imageViewSin;
+    private ImageView imageViewSin2;
+    private ImageView imageViewRadar;
 
     private WritableImage imageSinogram;
+    private WritableImage imageFilteredSinogram;
 
     // calculated locally
     private int radius;
     private double[][] sinogramArrayRGB;
+    private double[][] filteredSinogramArrayRGB;
     private double singleDetectorSpread;
     private int iterationsNumber;
 
-    public Sinogram (int detectorNumber, double detectorSpread, double iterationAngleDistance, Image imageInput) {
+    public Sinogram (int detectorNumber, double detectorSpread, double iterationAngleDistance, Image imageInput, ImageView imageViewSin, ImageView imageViewSin2, ImageView imageViewRadar) {
         this.detectorNumber = detectorNumber;
         this.detectorSpread = detectorSpread;
         this.iterationAngleDistance = iterationAngleDistance;
         this.imageInput = imageInput;
+        this.imageViewSin = imageViewSin;
+        this.imageViewSin2 = imageViewSin2;
+        this.imageViewRadar = imageViewRadar;
 
         iterationsNumber = (int)Math.ceil(360 / iterationAngleDistance);
         radius = (imageInput.getHeight() > imageInput.getWidth()) ? ((int)(imageInput.getWidth() / 2) - 1) : ((int)(imageInput.getHeight() / 2) - 1);
         sinogramArrayRGB = new double[iterationsNumber][detectorNumber];
+        filteredSinogramArrayRGB = new double[iterationsNumber][detectorNumber];
         for (double[] row : sinogramArrayRGB) Arrays.fill(row, 0);
         singleDetectorSpread = detectorSpread / (detectorNumber - 1);
+
+        makeSinogram();
     }
 
     private void saveImage(Image image, String name)
@@ -62,54 +74,55 @@ public class Sinogram {
         kernel[kernelCenterIndex] = 1;
     }
 
-    private void normalize() {
+    private void normalize(double[][] tempArray) {
         double maxColor = 0;
         double minColor = 1000000000;
         for (int i = 0; i < iterationsNumber; i++)
         {
             for (int j = 0; j < detectorNumber; j++)
             {
-                if (maxColor < sinogramArrayRGB[i][j]) maxColor = sinogramArrayRGB[i][j];
-                if (minColor > sinogramArrayRGB[i][j]) minColor = sinogramArrayRGB[i][j];
+                if (maxColor < tempArray[i][j]) maxColor = tempArray[i][j];
+                if (minColor > tempArray[i][j]) minColor = tempArray[i][j];
             }
         }
         for (int i = 0; i < iterationsNumber; i++) {
             for (int j = 0; j < detectorNumber; j++) {
-                sinogramArrayRGB[i][j] = (sinogramArrayRGB[i][j] - minColor) / (maxColor - minColor);
+                tempArray[i][j] = (tempArray[i][j] - minColor) / (maxColor - minColor);
                 //rgbArray[i][j] *= 255;
             }
         }
     }
 
-    private void filter() {
+    private void filter(double[][] tempArray) {
         double[] kernel = new double[detectorNumber];
         fillKernel(kernel);
         int kernelCenterIndex = detectorNumber / 2;
         for (int i = 0; i < iterationsNumber; i++)
         {
             double[] temporaryDetectors = new double[detectorNumber];
-            System.arraycopy(sinogramArrayRGB[i], 0, temporaryDetectors, 0, sinogramArrayRGB[i].length);
-            Arrays.fill(sinogramArrayRGB[i], 0);
+            System.arraycopy(tempArray[i], 0, temporaryDetectors, 0, tempArray[i].length);
+            Arrays.fill(tempArray[i], 0);
             for (int j = 0; j < detectorNumber; j++)
             {
                 int kernelIterator = Math.max(0, kernelCenterIndex - j);
                 for (int k = Math.max(0, j - kernelCenterIndex); k < Math.min(detectorNumber, j + kernelCenterIndex); k++)
                 {
-                    sinogramArrayRGB[i][j] += kernel[kernelIterator] * temporaryDetectors[k];
+                    tempArray[i][j] += kernel[kernelIterator] * temporaryDetectors[k];
                     kernelIterator++;
                 }
-                if (sinogramArrayRGB[i][j] < 0) sinogramArrayRGB[i][j] = 0;
+                if (tempArray[i][j] < 0) tempArray[i][j] = 0;
                 //rgbArray[i][j] = Math.abs(rgbArray[i][j]);
             }
         }
     }
 
-    private void copyToImage() {
+    private void copyToImage(WritableImage tempImage, double[][] tempArray) {
         for (int i = 0; i < iterationsNumber; i++)
         {
             for (int j = 0; j < detectorNumber; j++)
             {
-                imageSinogram.getPixelWriter().setColor(i, j, Color.color(sinogramArrayRGB[i][j], sinogramArrayRGB[i][j], sinogramArrayRGB[i][j]));
+                tempImage.getPixelWriter().setColor(i, j, Color.color(tempArray[i][j], tempArray[i][j],
+                        tempArray[i][j]));
             }
         }
     }
@@ -182,19 +195,31 @@ public class Sinogram {
         }
     }
 
-    public Image makeSinogram()
+    private void copyArray() {
+        filteredSinogramArrayRGB = sinogramArrayRGB.clone();
+    }
+
+    public void makeSinogram()
     {
         imageSinogram = new WritableImage(iterationsNumber, detectorNumber);
+        imageFilteredSinogram= new WritableImage(iterationsNumber, detectorNumber);
 
         createSinogram();
-        filter();
-        normalize();
-        copyToImage();
+        copyArray();
 
-        return imageSinogram;
+        normalize(sinogramArrayRGB);
+        copyToImage(imageSinogram, sinogramArrayRGB);
+        imageViewSin.setImage(imageSinogram);
+
+        filter(filteredSinogramArrayRGB);
+        normalize(filteredSinogramArrayRGB);
+        copyToImage(imageFilteredSinogram, filteredSinogramArrayRGB);
+        imageViewSin2.setImage(imageFilteredSinogram);
     }
 
     public Image getSinogram() {
         return imageSinogram;
     }
+
+    public Image getFilteredSinogram() { return imageFilteredSinogram; }
 }
