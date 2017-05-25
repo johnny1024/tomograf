@@ -1,15 +1,9 @@
 package sample;
 
-import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 
 public class Sinogram {
@@ -24,6 +18,7 @@ public class Sinogram {
 
     private WritableImage imageSinogram;
     private WritableImage imageFilteredSinogram;
+    private WritableImage imageRadar;
 
     // calculated locally
     private int radius;
@@ -48,49 +43,16 @@ public class Sinogram {
         for (double[] row : sinogramArrayRGB) Arrays.fill(row, 0);
         singleDetectorSpread = detectorSpread / (detectorNumber - 1);
 
-        makeSinogram();
+        start();
     }
 
-    private void saveImage(Image image, String name)
-    {
-        File output = new File("D:\\Documents\\!MINE\\Java\\" + name + ".png"); // THIS PATHNAME IS WRONG, WE NEED TO CHANGE IT
-        BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
-        try
-        {
-            ImageIO.write(bImage, "png", output);
-        } catch (IOException e)
-        {
-            throw new RuntimeException();
-        }
-    }
-
-    private void fillKernel(double[] kernel)
-    {
+    private void fillKernel(double[] kernel) {
         int kernelCenterIndex = detectorNumber / 2;
         for (int i = 0; i < detectorNumber; i++)
         {
             kernel[i] = ((i - kernelCenterIndex) % 2 == 0) ? 0 : (-4 / Math.pow(Math.PI, 2)  / Math.pow((i - kernelCenterIndex), 2));
         }
         kernel[kernelCenterIndex] = 1;
-    }
-
-    private void normalize(double[][] tempArray) {
-        double maxColor = 0;
-        double minColor = 1000000000;
-        for (int i = 0; i < iterationsNumber; i++)
-        {
-            for (int j = 0; j < detectorNumber; j++)
-            {
-                if (maxColor < tempArray[i][j]) maxColor = tempArray[i][j];
-                if (minColor > tempArray[i][j]) minColor = tempArray[i][j];
-            }
-        }
-        for (int i = 0; i < iterationsNumber; i++) {
-            for (int j = 0; j < detectorNumber; j++) {
-                tempArray[i][j] = (tempArray[i][j] - minColor) / (maxColor - minColor);
-                //rgbArray[i][j] *= 255;
-            }
-        }
     }
 
     private void filter(double[][] tempArray) {
@@ -116,21 +78,12 @@ public class Sinogram {
         }
     }
 
-    private void copyToImage(WritableImage tempImage, double[][] tempArray) {
-        for (int i = 0; i < iterationsNumber; i++)
-        {
-            for (int j = 0; j < detectorNumber; j++)
-            {
-                tempImage.getPixelWriter().setColor(i, j, Color.color(tempArray[i][j], tempArray[i][j],
-                        tempArray[i][j]));
-            }
-        }
-    }
-
     private void createSinogram() {
         double transmiterAnglePosition = 0;
         for (int i = 0; i < iterationsNumber; i++)
         {
+            cleanRadar();
+            imageViewRadar.setImage(imageRadar);
             double detectorStartAngle = transmiterAnglePosition + 180 - (float)(detectorNumber / 2) * singleDetectorSpread;
             int transmiterX = (int)((Math.sin(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
             int transmiterY = (int)((-Math.cos(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
@@ -154,6 +107,7 @@ public class Sinogram {
                 pixelY = transmiterY;
 
                 color += imageInput.getPixelReader().getColor(pixelX, pixelY).getBrightness();
+                imageRadar.getPixelWriter().setColor(pixelX, pixelY, Color.color(0, 1, 0));
 
                 if(deltaX >= deltaY)
                 {
@@ -169,6 +123,7 @@ public class Sinogram {
                         }
 
                         color += imageInput.getPixelReader().getColor(pixelX, pixelY).getBrightness();
+                        imageRadar.getPixelWriter().setColor(pixelX, pixelY, Color.color(0, 1, 0));
                     }
                 }
                 else // deltaX < deltaY
@@ -185,6 +140,7 @@ public class Sinogram {
                         }
 
                         color += imageInput.getPixelReader().getColor(pixelX, pixelY).getBrightness();
+                        imageRadar.getPixelWriter().setColor(pixelX, pixelY, Color.color(0, 1, 0));
                     }
                 }
                 sinogramArrayRGB[i][j] = color;
@@ -195,26 +151,33 @@ public class Sinogram {
         }
     }
 
-    private void copyArray() {
-        filteredSinogramArrayRGB = sinogramArrayRGB.clone();
+    private void cleanRadar() {
+        for (int i = 0; i < imageRadar.getWidth(); i++) {
+            for (int j = 0; j < imageRadar.getHeight(); j++) {
+                imageRadar.getPixelWriter().setColor(i, j, Color.color(0,0,0));
+            }
+        }
     }
 
-    public void makeSinogram()
-    {
+    public void start() {
         imageSinogram = new WritableImage(iterationsNumber, detectorNumber);
         imageFilteredSinogram= new WritableImage(iterationsNumber, detectorNumber);
+        imageRadar = new WritableImage((int)imageInput.getHeight(), (int)imageInput.getWidth());
 
         createSinogram();
-        copyArray();
+        filteredSinogramArrayRGB = sinogramArrayRGB.clone();
 
-        normalize(sinogramArrayRGB);
-        copyToImage(imageSinogram, sinogramArrayRGB);
+        Utilities.normalize(sinogramArrayRGB);
+        Utilities.copyToImage(sinogramArrayRGB, imageSinogram);
         imageViewSin.setImage(imageSinogram);
 
         filter(filteredSinogramArrayRGB);
-        normalize(filteredSinogramArrayRGB);
-        copyToImage(imageFilteredSinogram, filteredSinogramArrayRGB);
+        Utilities.normalize(filteredSinogramArrayRGB);
+        Utilities.copyToImage(filteredSinogramArrayRGB, imageFilteredSinogram);
         imageViewSin2.setImage(imageFilteredSinogram);
+
+        cleanRadar();
+        imageViewRadar.setImage(imageRadar);
     }
 
     public Image getSinogram() {

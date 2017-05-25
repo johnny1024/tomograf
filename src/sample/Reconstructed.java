@@ -22,6 +22,7 @@ public class Reconstructed
     private int height;
     private int width;
     private double[][] outputArrayRGB;
+    private double[][] partialOutput;
     private double singleDetectorSpread;
     private int iterationsNumber;
 
@@ -38,14 +39,14 @@ public class Reconstructed
         this.width = width;
         radius = (height > width) ? ((width / 2) - 1) : ((height / 2) - 1);
         outputArrayRGB = new double[width][height];
+        partialOutput = new double[width][height];
         for (double[] row : outputArrayRGB) Arrays.fill(row, 0);
         singleDetectorSpread = detectorSpread / (detectorNumber - 1);
 
-        makeReconstruced();
+        start();
     }
 
-    private void createReconstructed()
-    {
+    private void createReconstructed() {
         double transmiterAnglePosition = 0;
 
         for (int i = 0; i < iterationsNumber; i++)
@@ -53,6 +54,8 @@ public class Reconstructed
             double detectorStartAngle = transmiterAnglePosition + 180 - (detectorNumber / 2) * singleDetectorSpread;
             int transmiterX = (int)((Math.sin(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
             int transmiterY = (int)((-Math.cos(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
+
+            //partialDisplay();
 
             double color;
             for (int j = 0; j < detectorNumber; j++)
@@ -110,33 +113,19 @@ public class Reconstructed
         }
     }
 
-    private void normalize() {
-        double maxColor = 0;
-        double minColor = 1000000000;
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                if (maxColor < outputArrayRGB[i][j]) maxColor = outputArrayRGB[i][j];
-                if (minColor > outputArrayRGB[i][j]) minColor = outputArrayRGB[i][j];
-            }
-        }
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                outputArrayRGB[i][j] = (outputArrayRGB[i][j] - minColor) / (maxColor - minColor);
-                imageReconstructed.getPixelWriter().setColor(i, j, Color.color(outputArrayRGB[i][j], outputArrayRGB[i][j], outputArrayRGB[i][j]));
-            }
-        }
+    private void partialDisplay() {
+        partialOutput = outputArrayRGB.clone();
+        Utilities.normalize(partialOutput);
+        Utilities.copyToImage(partialOutput, imageReconstructed);
+        imageViewOut.setImage(imageReconstructed);
     }
 
-    public void makeReconstruced()
-    {
+    private void start() {
         imageReconstructed = new WritableImage(width, height);
 
         createReconstructed();
-        normalize();
+        Utilities.normalize(outputArrayRGB);
+        Utilities.copyToImage(outputArrayRGB, imageReconstructed);
 
         imageViewOut.setImage(imageReconstructed);
     }

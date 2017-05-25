@@ -13,9 +13,9 @@ import javafx.scene.control.Button;
 
 public class Controller {
 
-    private int detectorNumber = 300;
-    private double detectorSpread = 300;
-    private double iterationAngleDistance = 1;
+    private int detectorNumber;
+    private double detectorSpread;
+    private double iterationAngleDistance;
 
     private Image imageIn;
     private Image placeholder;
@@ -55,27 +55,50 @@ public class Controller {
     @FXML
     private ImageView imageViewOut2;
 
+    private void clearImageViews() {
+        imageViewSin.setImage(null);
+        imageViewSin2.setImage(null);
+        imageViewOut.setImage(null);
+        imageViewOut2.setImage(null);
+    }
+
     private void loadImage() {
         runButton.setDisable(true);
-        //imageErrorLabel.setText("Loading...");
+        loadButton.setDisable(true);
+        clearImageViews();
+        //imageErrorLabel.setText(String.format("Loading..."));
         try {
             imageIn = new Image(imageTextField.getText());
             imageViewIn.setImage(imageIn);
             //imageErrorLabel.setText("");
             runButton.setDisable(false);
+            loadButton.setDisable(false);
         } catch (Exception e) {
             //.setText("Invalid image!");
+            imageViewIn.setImage(null);
             runButton.setDisable(true);
+            loadButton.setDisable(false);
         }
     }
 
     private void runAllOperations() {
+        loadButton.setDisable(true);
+        runButton.setDisable(true);
+
+        clearImageViews();
+
         Sinogram sinogram = new Sinogram(detectorNumber, detectorSpread, iterationAngleDistance, imageIn, imageViewSin, imageViewSin2, imageViewRadar);
 
         Reconstructed output = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, sinogram
                 .getSinogram(), (int)imageIn.getHeight(), (int)imageIn.getWidth(), imageViewOut);
         Reconstructed output2 = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, sinogram
                 .getFilteredSinogram(), (int)imageIn.getHeight(), (int)imageIn.getWidth(), imageViewOut2);
+
+        imageViewOut.setImage(output.getReconstructed());
+        imageViewOut2.setImage(output2.getReconstructed());
+
+        loadButton.setDisable(false);
+        runButton.setDisable(false);
     }
 
     public void init()
@@ -89,6 +112,9 @@ public class Controller {
 
         imageErrorLabel.setText("");
         runButton.setDisable(true);
+        detectorNumber = (int)numberOfDetectorsSlider.getValue();
+        detectorSpread = (int)detectorsSpreadSlider.getValue();
+        iterationAngleDistance = iterationAngleSlider.getValue() / 100;
 
         numberOfDetectorsSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -136,12 +162,10 @@ public class Controller {
         runButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                loadButton.setDisable(true);
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         runAllOperations();
-                        loadButton.setDisable(false);
                     }
                 });
                 t.start();
