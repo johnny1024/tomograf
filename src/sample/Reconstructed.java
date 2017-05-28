@@ -6,11 +6,11 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class Reconstructed
 {
     private int detectorNumber;
-    private double detectorSpread;
     private double iterationAngleDistance;
     private Image imageSinogram;
     private ImageView imageViewOut;
@@ -29,7 +29,6 @@ public class Reconstructed
     public Reconstructed(int detectorNumber, double detectorSpread, double iterationAngleDistance, Image
             imageSinogram, int height, int width, ImageView imageViewOut) {
         this.detectorNumber = detectorNumber;
-        this.detectorSpread = detectorSpread;
         this.iterationAngleDistance = iterationAngleDistance;
         this.imageSinogram = imageSinogram;
         this.imageViewOut = imageViewOut;
@@ -114,7 +113,9 @@ public class Reconstructed
     }
 
     private void partialDisplay() {
-        partialOutput = outputArrayRGB.clone();
+        //partialOutput = outputArrayRGB.clone();
+        for (int i = 0; i < width; i++) for (int j = 0; j < height; j++) partialOutput[i][j] = outputArrayRGB[i][j];
+
         Utilities.normalize(partialOutput);
         Utilities.copyToImage(partialOutput, imageReconstructed);
         imageViewOut.setImage(imageReconstructed);
@@ -126,7 +127,6 @@ public class Reconstructed
         createReconstructed();
         Utilities.normalize(outputArrayRGB);
         Utilities.copyToImage(outputArrayRGB, imageReconstructed);
-
         imageViewOut.setImage(imageReconstructed);
     }
 

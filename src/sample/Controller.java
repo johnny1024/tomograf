@@ -12,14 +12,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
 
 public class Controller {
-
-    private int detectorNumber;
-    private double detectorSpread;
-    private double iterationAngleDistance;
-
-    private Image imageIn;
-    private Image placeholder;
-
     @FXML
     private TextField imageTextField;
     @FXML
@@ -55,17 +47,30 @@ public class Controller {
     @FXML
     private ImageView imageViewOut2;
 
+    private int detectorNumber;
+    private double detectorSpread;
+    private double iterationAngleDistance;
+
+    private Image imageIn;
+    private Image placeholder;
+    private Image imageSin;
+    private Image imageSin2;
+    private Image imageOut;
+    private Image imageOut2;
+
     private void clearImageViews() {
         imageViewSin.setImage(null);
         imageViewSin2.setImage(null);
         imageViewOut.setImage(null);
         imageViewOut2.setImage(null);
+        imageViewRadar.setImage(null);
     }
 
     private void loadImage() {
         runButton.setDisable(true);
         loadButton.setDisable(true);
         clearImageViews();
+        imageViewIn.setImage(null);
         //imageErrorLabel.setText(String.format("Loading..."));
         try {
             imageIn = new Image(imageTextField.getText());
@@ -87,15 +92,25 @@ public class Controller {
 
         clearImageViews();
 
-        Sinogram sinogram = new Sinogram(detectorNumber, detectorSpread, iterationAngleDistance, imageIn, imageViewSin, imageViewSin2, imageViewRadar);
+        try {
+            Sinogram sinogram = new Sinogram(detectorNumber, detectorSpread, iterationAngleDistance, imageIn, imageViewSin, imageViewSin2, imageViewRadar);
+            imageSin = sinogram.getSinogram();
+            imageSin2 = sinogram.getFilteredSinogram();
+            sinogram = null;
+            imageViewSin.setImage(imageSin);
+            imageViewSin2.setImage(imageSin2);
 
-        Reconstructed output = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, sinogram
-                .getSinogram(), (int)imageIn.getHeight(), (int)imageIn.getWidth(), imageViewOut);
-        Reconstructed output2 = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, sinogram
-                .getFilteredSinogram(), (int)imageIn.getHeight(), (int)imageIn.getWidth(), imageViewOut2);
-
-        imageViewOut.setImage(output.getReconstructed());
-        imageViewOut2.setImage(output2.getReconstructed());
+            Reconstructed output = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, imageSin,
+                    (int) imageIn.getHeight(), (int)imageIn.getWidth(), imageViewOut);
+            Reconstructed output2 = new Reconstructed(detectorNumber, detectorSpread, iterationAngleDistance, imageSin2,
+                    (int) imageIn.getHeight(), (int)imageIn.getWidth(), imageViewOut2);
+            imageOut = output.getReconstructed();
+            imageOut2 = output2.getReconstructed();
+            output = null;
+            output2 = null;
+            imageViewOut.setImage(imageOut);
+            imageViewOut2.setImage(imageOut2);
+        } catch (Exception e) { System.out.println(" run all error"); }
 
         loadButton.setDisable(false);
         runButton.setDisable(false);

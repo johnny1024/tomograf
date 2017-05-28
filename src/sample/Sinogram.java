@@ -9,7 +9,6 @@ import java.util.Arrays;
 public class Sinogram {
     // from constructor
     private int detectorNumber;
-    private double detectorSpread;
     private double iterationAngleDistance;
     private Image imageInput;
     private ImageView imageViewSin;
@@ -19,6 +18,7 @@ public class Sinogram {
     private WritableImage imageSinogram;
     private WritableImage imageFilteredSinogram;
     private WritableImage imageRadar;
+    private WritableImage imageRadarBuild;
 
     // calculated locally
     private int radius;
@@ -29,7 +29,6 @@ public class Sinogram {
 
     public Sinogram (int detectorNumber, double detectorSpread, double iterationAngleDistance, Image imageInput, ImageView imageViewSin, ImageView imageViewSin2, ImageView imageViewRadar) {
         this.detectorNumber = detectorNumber;
-        this.detectorSpread = detectorSpread;
         this.iterationAngleDistance = iterationAngleDistance;
         this.imageInput = imageInput;
         this.imageViewSin = imageViewSin;
@@ -82,8 +81,8 @@ public class Sinogram {
         double transmiterAnglePosition = 0;
         for (int i = 0; i < iterationsNumber; i++)
         {
-            cleanRadar();
-            imageViewRadar.setImage(imageRadar);
+            //cleanRadar();
+
             double detectorStartAngle = transmiterAnglePosition + 180 - (float)(detectorNumber / 2) * singleDetectorSpread;
             int transmiterX = (int)((Math.sin(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
             int transmiterY = (int)((-Math.cos(Math.toRadians(transmiterAnglePosition)) + 1) * radius);
@@ -107,7 +106,7 @@ public class Sinogram {
                 pixelY = transmiterY;
 
                 color += imageInput.getPixelReader().getColor(pixelX, pixelY).getBrightness();
-                imageRadar.getPixelWriter().setColor(pixelX, pixelY, Color.color(0, 1, 0));
+                //imageRadarBuild.getPixelWriter().setColor(pixelX, pixelY, Color.color(0, 1, 0));
 
                 if(deltaX >= deltaY)
                 {
@@ -123,7 +122,7 @@ public class Sinogram {
                         }
 
                         color += imageInput.getPixelReader().getColor(pixelX, pixelY).getBrightness();
-                        imageRadar.getPixelWriter().setColor(pixelX, pixelY, Color.color(0, 1, 0));
+                        //imageRadarBuild.getPixelWriter().setColor(pixelX, pixelY, Color.color(0, 1, 0));
                     }
                 }
                 else // deltaX < deltaY
@@ -140,7 +139,7 @@ public class Sinogram {
                         }
 
                         color += imageInput.getPixelReader().getColor(pixelX, pixelY).getBrightness();
-                        imageRadar.getPixelWriter().setColor(pixelX, pixelY, Color.color(0, 1, 0));
+                        //imageRadarBuild.getPixelWriter().setColor(pixelX, pixelY, Color.color(0, 1, 0));
                     }
                 }
                 sinogramArrayRGB[i][j] = color;
@@ -148,23 +147,53 @@ public class Sinogram {
                 //rgbArray[i][j] = color / Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
             }
             transmiterAnglePosition += iterationAngleDistance;
+            //copyRadar();
         }
     }
 
     private void cleanRadar() {
-        for (int i = 0; i < imageRadar.getWidth(); i++) {
-            for (int j = 0; j < imageRadar.getHeight(); j++) {
-                imageRadar.getPixelWriter().setColor(i, j, Color.color(0,0,0));
+        for (int i = 0; i < imageRadarBuild.getWidth(); i++) {
+            for (int j = 0; j < imageRadarBuild.getHeight(); j++) {
+                imageRadarBuild.getPixelWriter().setColor(i, j, Color.color(0,0,0));
             }
+        }
+    }
+
+    private void copyRadar() {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    for (int i = 0; i < imageRadarBuild.getWidth(); i++) {
+                        for (int j = 0; j < imageRadarBuild.getHeight(); j++) {
+                            imageRadar.getPixelWriter().setColor(i, j, imageRadarBuild.getPixelReader().getColor(i, j));
+                        }
+                    }
+                } catch (Exception e) { System.out.println("coping radar error"); }
+            }
+        }
+        );
+        t.start();
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
     public void start() {
         imageSinogram = new WritableImage(iterationsNumber, detectorNumber);
         imageFilteredSinogram= new WritableImage(iterationsNumber, detectorNumber);
-        imageRadar = new WritableImage((int)imageInput.getHeight(), (int)imageInput.getWidth());
+//        imageRadar = new WritableImage((int)imageInput.getHeight(), (int)imageInput.getWidth());
+//        imageRadarBuild = new WritableImage((int)imageInput.getHeight(), (int)imageInput.getWidth());
+//
+//        imageViewRadar.setImage(imageRadar);
+
+        imageViewSin.setImage(null);
+        imageViewSin2.setImage(null);
 
         createSinogram();
+        //imageViewRadar.setImage(null);
         filteredSinogramArrayRGB = sinogramArrayRGB.clone();
 
         Utilities.normalize(sinogramArrayRGB);
@@ -175,9 +204,6 @@ public class Sinogram {
         Utilities.normalize(filteredSinogramArrayRGB);
         Utilities.copyToImage(filteredSinogramArrayRGB, imageFilteredSinogram);
         imageViewSin2.setImage(imageFilteredSinogram);
-
-        cleanRadar();
-        imageViewRadar.setImage(imageRadar);
     }
 
     public Image getSinogram() {
