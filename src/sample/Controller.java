@@ -52,7 +52,6 @@ public class Controller {
     private double iterationAngleDistance;
 
     private Image imageIn;
-    private Image placeholder;
     private Image imageSin;
     private Image imageSin2;
     private Image imageOut;
