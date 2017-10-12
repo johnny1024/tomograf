@@ -6,8 +6,12 @@
           <option name="url" value="https://github.com/johnny1024/tomograf.git" />
           <option name="userName" value="" />
         </UrlAndUserName>
+        <UrlAndUserName>
+          <option name="url" value="https://github.com/johnny1024/Wyszukiwarka.git" />
+          <option name="userName" value="" />
+        </UrlAndUserName>
       </list>
     </option>
-    <option name="cloneParentDir" value="C:\Users\Patro\Dropbox\STUDIA\Informatyka W Medycynie\Tomograf-GIT" />
+    <option name="cloneParentDir" value="C:\Users\Patro\Dropbox\STUDIA\Informatyka W Medycynie\Wyszukiwarka" />
   </component>
 </application>
